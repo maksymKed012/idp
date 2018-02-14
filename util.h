@@ -18,6 +18,8 @@
 #include	<unistd.h>
 #include	<sys/wait.h>
 #include	<sys/un.h>		/* for Unix domain sockets */
+#include    <net/if.h>
+#include    <sys/ioctl.h> 
 
 //#ifdef	HAVE_SYS_SELECT_H
 # include	<sys/select.h>	/* for convenience */

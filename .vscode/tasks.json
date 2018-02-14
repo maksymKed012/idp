@@ -4,7 +4,20 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "build",
+            "taskName": "clean",
+            "type": "shell",
+            "command":"rm",
+            "args": [
+                "idp_task1"
+            ],
+            "group":"build",
+            "presentation": {
+                "reveal": "silent"
+            }
+
+        },
+        {
+            "taskName": "build",
             "type": "shell",
             "command": "g++",
             "args": [
