@@ -1,16 +1,9 @@
 #include <iostream>
 #include "util.h"
 
-#define LISTENQ 16
-#define DEFAULT_ERROR -1
-#define SERVER_PORT 8877
-#define ECHO_STR_LEN 7
-
-#define CALL_FUNC_QUIT_ON_ERR(func, error, ...)                                 \
-    int value = func(__VA_ARGS__);                                              \
-    if (value == error)                                                         \ 
-        err_quit("%s failed with error %d", #func, errno);                      \
-    return value;                                                               
+static const int LISTENQ = 50;
+static const int DEFAULT_ERROR = -1;
+static const int SERVER_PORT = 8877;                                                           
 
 //error handlers
 void err_sys(const char* x) 
