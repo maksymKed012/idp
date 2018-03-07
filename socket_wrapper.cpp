@@ -1,5 +1,13 @@
 #include "socket_wrapper.hpp"
-#include "util.h"
+
+SocketWrapper::SocketWrapper(int handle, const sockaddr* address) 
+: m_socket_handle(handle)
+{
+    bzero(&m_socket_address, sizeof(sockaddr_in));
+    m_socket_address.sin_addr = ((const sockaddr_in*)address)->sin_addr;
+    m_socket_address.sin_family = ((const sockaddr_in*)address)->sin_family;
+    m_socket_address.sin_port = ((const sockaddr_in*)address)->sin_port;
+}
 
 SocketWrapper::SocketWrapper(int domain, int type, int protocol, int port)
 {
@@ -13,7 +21,7 @@ SocketWrapper::SocketWrapper(int domain, int type, int protocol, int port)
 
 bool SocketWrapper::InitSocketAddress(int family, int address, int port)
 {
-    bzero(&m_socket_address, sizeof(*sockaddr_in));
+    bzero(&m_socket_address, sizeof(sockaddr_in));
 
     m_socket_address.sin_family = family;
     m_socket_address.sin_addr.s_addr = address;
@@ -24,7 +32,7 @@ bool SocketWrapper::InitSocketAddress(int family, int address, int port)
 
 bool SocketWrapper::SetInAddressWithStr(const char* ip_address_str)
 {
-    if((inet_pton(AF_INET, ip_address_str, &m_socket_address.sin_addr))) <= 0)
+    if((inet_pton(AF_INET, ip_address_str, &m_socket_address.sin_addr)) <= 0)
         return false;
 
     return true;
@@ -32,7 +40,7 @@ bool SocketWrapper::SetInAddressWithStr(const char* ip_address_str)
 
 bool SocketWrapper::Bind()
 {
-    if(bind(m_socket_handle, &m_socket_address, sizeof(*m_socket_address)) < 0)
+    if(bind(m_socket_handle, (const sockaddr*)&m_socket_address, sizeof(m_socket_address)) < 0)
         return false;
 
     return true;
@@ -49,7 +57,7 @@ bool SocketWrapper::Listen(int flag)
 SocketWrapper* SocketWrapper::Accept(sockaddr* client_sockaddr, socklen_t* client_socket_length)
 {
     int client_socket_handle = accept(m_socket_handle, client_sockaddr, client_socket_length);
-    return CreateFromHandleAndAddress(client_socket_handle, client_sockaddr);
+    return new SocketWrapper(client_socket_handle, client_sockaddr);
 }
 
 bool SocketWrapper::Close()

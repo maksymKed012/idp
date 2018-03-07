@@ -6,33 +6,32 @@
         {
             "taskName": "clean",
             "type": "shell",
-            "command":"rm",
+            "command": "rm",
             "args": [
                 "idp_task1"
             ],
-            "group":"build",
+            "group": "build",
             "presentation": {
                 "reveal": "silent"
-            }
-
+            },
+            "problemMatcher": []
         },
         {
             "taskName": "build",
             "type": "shell",
             "command": "g++",
             "args": [
-                // Ask msbuild to generate full paths for file names.
                 "-g",
                 "idp_task1.cpp",
+                "socket_wrapper.cpp",
+                "util.cpp",
                 "-o",
                 "idp_task1"
             ],
             "group": "build",
             "presentation": {
-                // Reveal the output only if unrecognized errors occur.
                 "reveal": "silent"
             },
-            // Use the standard MS compiler pattern to detect errors, warnings and infos
             "problemMatcher": "$msCompile"
         }
     ]
