@@ -1,6 +1,7 @@
 #include "socket_wrapper.hpp"
+#include "util.h"
 
-SocketWrapper::SocketWrapper(int domain, int type, int protocol)
+SocketWrapper::SocketWrapper(int domain, int type, int protocol, int port)
 {
     m_socket_handle = socket(domain, type, protocol);
 
@@ -45,9 +46,10 @@ bool SocketWrapper::Listen(int flag)
     return true;
 }
 
-int SocketWrapper::Accept(sockaddr* client_sockaddr, socklen_t* client_socket_length)
+SocketWrapper* SocketWrapper::Accept(sockaddr* client_sockaddr, socklen_t* client_socket_length)
 {
-    return accept(m_socket_handle, client_sockaddr, client_socket_length);
+    int client_socket_handle = accept(m_socket_handle, client_sockaddr, client_socket_length);
+    return CreateFromHandleAndAddress(client_socket_handle, client_sockaddr);
 }
 
 bool SocketWrapper::Close()
