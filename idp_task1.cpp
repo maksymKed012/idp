@@ -8,6 +8,8 @@ static const int ECHO_STR_LEN = 6;
 
 void createTestTCPServer()
 {
+    try 
+    {
     std::unique_ptr<SocketWrapper> server_socket = std::make_unique<SocketWrapper>(AF_INET, SOCK_STREAM, 0, SERVER_PORT);
 
     server_socket->Bind();
@@ -44,6 +46,11 @@ void createTestTCPServer()
 	}
 
 	server_socket->Close();
+    }
+    catch (std::exception & e)
+    {
+        printf(e.what());
+    }
 }
 
 int main(int argc, char** argv)
