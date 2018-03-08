@@ -1,5 +1,6 @@
 
 #include "util.h"
+#include <memory>
 
 class SocketWrapper
 {
@@ -8,6 +9,10 @@ class SocketWrapper
     int m_socket_handle;
     sockaddr_in m_socket_address;
 
+    private:
+
+    SocketWrapper(const SocketWrapper&) = delete;
+    SocketWrapper& operator=(const SocketWrapper&) = delete;
 
     public:
 
@@ -17,7 +22,7 @@ class SocketWrapper
     bool                      InitSocketAddress(int family, int address, int port);
     bool                      Bind();
     bool                      Listen(int flag);
-    SocketWrapper*            Accept(sockaddr* client_sockaddr, socklen_t* socket_length);
+    std::unique_ptr<SocketWrapper> Accept();
     bool                      Close();
     bool                      Send(const void* buffer, size_t buffer_len, int flags);
     int                       GetSocketHandle() const {return m_socket_handle;}

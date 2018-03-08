@@ -1,25 +1,22 @@
 #include "socket_wrapper.hpp"
 #include "util.h"
 
-static const int LISTENQ = 50;
+static const int LISTENQ = 16;
 static const int DEFAULT_ERROR = -1;
 static const int SERVER_PORT = 8877;
 static const int ECHO_STR_LEN = 6;                                            
 
 void createTestTCPServer()
 {
-    SocketWrapper* server_socket = new SocketWrapper(AF_INET, SOCK_STREAM, 0, SERVER_PORT);
+    std::unique_ptr<SocketWrapper> server_socket = std::make_unique<SocketWrapper>(AF_INET, SOCK_STREAM, 0, SERVER_PORT);
 
     server_socket->Bind();
 
     server_socket->Listen(LISTENQ);
 
-    struct sockaddr_in client_address;
-	socklen_t client_address_len = 0;
-
     while (true) 
     {
-		SocketWrapper* client_socket = server_socket->Accept((struct sockaddr *)&client_address, &client_address_len);
+		std::unique_ptr<SocketWrapper> client_socket = server_socket->Accept();
 
 		int n = 0;
 		int maxlen = 100;
@@ -44,12 +41,9 @@ void createTestTCPServer()
 		}
 
 		client_socket->Close();
-        delete client_socket;
 	}
 
 	server_socket->Close();
-    delete server_socket;
-
 }
 
 int main(int argc, char** argv)

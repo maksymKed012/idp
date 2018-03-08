@@ -54,10 +54,12 @@ bool SocketWrapper::Listen(int flag)
     return true;
 }
 
-SocketWrapper* SocketWrapper::Accept(sockaddr* client_sockaddr, socklen_t* client_socket_length)
+std::unique_ptr<SocketWrapper> SocketWrapper::Accept()
 {
-    int client_socket_handle = accept(m_socket_handle, client_sockaddr, client_socket_length);
-    return new SocketWrapper(client_socket_handle, client_sockaddr);
+    struct sockaddr_in client_address;
+	socklen_t client_address_len = 0;
+    int client_socket_handle = accept(m_socket_handle, (sockaddr*)&client_address, &client_address_len);
+    return std::make_unique<SocketWrapper>(client_socket_handle, (sockaddr*)&client_address);
 }
 
 bool SocketWrapper::Close()
