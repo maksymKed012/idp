@@ -8,7 +8,7 @@ static const int ECHO_STR_LEN = 6;
 
 void createTestTCPServer()
 {
-    SocketWrapper* server_socket = new SocketWrapper(PF_INET, SOCK_STREAM, 0, htons(SERVER_PORT));
+    SocketWrapper* server_socket = new SocketWrapper(AF_INET, SOCK_STREAM, 0, SERVER_PORT);
 
     server_socket->Bind();
 
