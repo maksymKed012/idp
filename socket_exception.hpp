@@ -1,6 +1,14 @@
 #include <exception>
 #include <string>
 
+/* You'll have the same (and more safe) result with just
+typedef std::runtime_error socket_exception;
+   or, in more modern way
+using socket_exception = std::runtime_error;
+   Also you can think about extending std::runtime_error with integer error
+   code, it might be useful (or not :))
+*/
+
 class socket_exception : public std::exception
 {
     private:

@@ -5,6 +5,8 @@ SocketWrapper::SocketWrapper(int handle, const sockaddr* address)
 : m_socket_handle(handle)
 {
     bzero(&m_socket_address, sizeof(sockaddr_in));
+    // let's avoid pure C type conversions. better use *_cast function instead (static_cast/dynamic_cast/so on)
+    // and it might be better (cleaner) to use it once, with assigning to some temporary variable
     m_socket_address.sin_addr = ((const sockaddr_in*)address)->sin_addr;
     m_socket_address.sin_family = ((const sockaddr_in*)address)->sin_family;
     m_socket_address.sin_port = ((const sockaddr_in*)address)->sin_port;
@@ -16,6 +18,9 @@ SocketWrapper::SocketWrapper(int domain, int type, int protocol, int port)
 
     if(m_socket_handle != -1)
     {
+        // it is working for now (INADDR_ANY), but in future we'll need to set some specific addr
+        // e.g. when writing the client app.
+        // maybe lets just create socket here, and bind specific ip/port in Bind function (S in SOLID)
         InitSocketAddress(AF_INET, htonl(INADDR_ANY), htons(port));
     }
     else throw socket_exception("socket function returned error");
@@ -48,6 +53,8 @@ void SocketWrapper::Listen(int flag)
         throw socket_exception("listen returned error");
 }
 
+// honestly, I do not see anything bad in returning SocketWrapper object here.
+// smart pointer creates redundancy, which is absolutely not needed in this case, IMHO.
 std::unique_ptr<SocketWrapper> SocketWrapper::Accept()
 {
     struct sockaddr_in client_address;
