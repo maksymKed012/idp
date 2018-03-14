@@ -2,6 +2,8 @@
 #include "socket_exception.hpp"
 #include <iostream>
 #include <string.h>
+#include <vector>
+#include <thread>
 
 static const int BUFFER_MAXLEN = 100;
 static const int LISTENQ = 16;
@@ -9,8 +11,34 @@ static const int SERVER_PORT = 8877;
 static const char* ECHO_STR_PREFIX = "echo: ";
 static const int ECHO_STR_LEN = strlen(ECHO_STR_PREFIX);
 
+void listeningThread(Socket_sptr client_socket)
+{
+    int n = 0;
+    int maxlen = 100;
+    char buffer[maxlen];
+
+    char echo[maxlen + ECHO_STR_LEN];
+    strcpy(echo, ECHO_STR_PREFIX);
+    memset(buffer, 0, maxlen);
+
+    while ((n = client_socket->Recv(buffer, maxlen, 0)) > 0)
+    {
+        printf("received: %s", buffer);
+
+        strcat(echo, buffer);
+
+        client_socket->Send(echo, strlen(echo), 0);
+        memset(buffer, 0, maxlen);
+        memset(echo + ECHO_STR_LEN, 0, maxlen);
+    }
+
+    client_socket->Close();
+}
+
 void createTestTCPServer()
 {
+    std::vector<std::thread> listeningThreads;
+
     try 
     {
         Socket_sptr server_socket = std::make_shared<Socket>(AF_INET, SOCK_STREAM, 0);
@@ -35,26 +63,16 @@ void createTestTCPServer()
             << client_socket->GetIPAddressStr() 
             <<std::endl;
 
-            while (received_data_length = client_socket->Recv(buffer, BUFFER_MAXLEN, 0))
-            {
-                std::cout << "received: "
-                << buffer << std::endl;
-
-                strcat(echo, buffer);
-
-                client_socket->Send(echo, strlen(echo), 0);
-                memset(buffer, 0, BUFFER_MAXLEN);
-                memset(echo + ECHO_STR_LEN, 0, BUFFER_MAXLEN);
-            }
-
-		    client_socket->Close();
+            listeningThreads.push_back(std::thread(listeningThread, std::move(client_socket)));
 	    }
 
 	    server_socket->Close();
     }
     catch (SocketException & e)
     {
-        std::cout << e.what() << std::endl;
+        printf("%s",e.what());
+        for (std::thread& listeningThread : listeningThreads)
+            listeningThread.join();
     }
 }
 
