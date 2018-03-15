@@ -1,7 +1,7 @@
 #include "socket_wrapper.hpp"
 #include "socket_exception.hpp"
 
-SocketWrapper::SocketWrapper(int handle,  sockaddr* address) 
+Socket::Socket(int handle,  sockaddr* address) 
 : m_socket_handle(handle)
 {
     bzero(&m_socket_address, sizeof(sockaddr_in));
@@ -11,17 +11,17 @@ SocketWrapper::SocketWrapper(int handle,  sockaddr* address)
     m_socket_address.sin_port = temp_address->sin_port;
 }
 
-SocketWrapper::SocketWrapper(int domain, int type, int protocol, int port)
+Socket::Socket(int domain, int type, int protocol, int port)
 {
     m_socket_handle = socket(domain, type, protocol);
 
     if(m_socket_handle == -1)
     {
-        throw socket_exception("socket function returned error");
+        throw SocketException("socket function returned error");
     }
 }
 
-void SocketWrapper::InitSocketAddress(int family, int address, int port)
+void Socket::InitSocketAddress(int family, int address, int port)
 {
     bzero(&m_socket_address, sizeof(sockaddr_in));
 
@@ -30,62 +30,60 @@ void SocketWrapper::InitSocketAddress(int family, int address, int port)
     m_socket_address.sin_port = port;
 }
 
-void SocketWrapper::SetInAddressWithStr(const char* ip_address_str)
+void Socket::SetInAddressWithStr(const char* ip_address_str)
 {
     if((inet_pton(AF_INET, ip_address_str, &m_socket_address.sin_addr)) <= 0)
-        throw socket_exception("inet_pton returned error");
+        throw SocketException("inet_pton returned error");
 }
 
-void SocketWrapper::Bind(const sockaddr_in* socket_address)
+void Socket::Bind(const unsigned port, const unsigned address)
 {
-    bzero(&m_socket_address, sizeof(sockaddr_in));
-    m_socket_address.sin_addr = socket_address->sin_addr;
-    m_socket_address.sin_family = socket_address->sin_family;
-    m_socket_address.sin_port = socket_address->sin_port;
+    m_socket_address.sin_addr.s_addr = address;
+    m_socket_address.sin_port = port;
 
     if(bind(m_socket_handle, (const sockaddr*)&m_socket_address, sizeof(m_socket_address)) < 0)
-        throw socket_exception("bind returned error");
+        throw SocketException("bind returned error");
 }
 
-void SocketWrapper::Listen(int flag)
+void Socket::Listen(int flag)
 {
     if(listen(m_socket_handle, flag) < 0)
-        throw socket_exception("listen returned error");
+        throw SocketException("listen returned error");
 }
 
-std::unique_ptr<SocketWrapper> SocketWrapper::Accept()
+Socket_sptr Socket::Accept()
 {
     struct sockaddr_in client_address;
 	socklen_t client_address_len = 0;
     int client_socket_handle = accept(m_socket_handle, (sockaddr*)&client_address, &client_address_len);
-    if(client_socket_handle == -1) throw socket_exception("accept returned error");
-    return std::make_unique<SocketWrapper>(client_socket_handle, (sockaddr*)&client_address);
+    if(client_socket_handle == -1) throw SocketException("accept returned error");
+    return std::make_shared<Socket>(client_socket_handle, (sockaddr*)&client_address);
 }
 
-void SocketWrapper::Close()
+void Socket::Close()
 {
     if(close(m_socket_handle) < 0)
-        throw socket_exception("close returned error");
+        throw SocketException("close returned error");
 }
 
-void SocketWrapper::Send(const void* buffer, size_t buffer_length, int flags)
+void Socket::Send(const void* buffer, size_t buffer_length, int flags)
 {
     if(send(m_socket_handle, buffer, buffer_length, flags) < 0)
-       throw socket_exception("send returned error");
+       throw SocketException("send returned error");
 }
 
-int SocketWrapper::ReceiveData(void* buffer, size_t buffer_length, int flags)
+int Socket::Recv(void* buffer, size_t buffer_length, int flags)
 {
     return recv(m_socket_handle, buffer, buffer_length, flags);
 }
 
-int SocketWrapper::ReadDataToBuffer(void* buffer, size_t buffer_length)
+int Socket::Read(void* buffer, size_t buffer_length)
 {
     return read(m_socket_handle, buffer, buffer_length);
 }
 
-void SocketWrapper::WriteDataFromBuffer(const void* buffer, size_t buffer_length)
+void Socket::Write(const void* buffer, size_t buffer_length)
 {
     if(write(m_socket_handle, buffer, buffer_length) == -1)
-        throw socket_exception("write returned error");
+        throw SocketException("write returned error");
 }
