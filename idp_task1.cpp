@@ -1,4 +1,5 @@
 #include "socket_wrapper.hpp"
+#include "socket_exception.hpp"
 #include "util.h"
 #include <iostream>
 
@@ -12,9 +13,9 @@ void createTestTCPServer()
 {
     try 
     {
-        Socket_sptr server_socket = std::make_shared<Socket>(AF_INET, SOCK_STREAM, 0, SERVER_PORT);
+        Socket_sptr server_socket = std::make_shared<Socket>(AF_INET, SOCK_STREAM, 0);
 
-        server_socket->Bind(htons(SERVER_PORT), INADDR_ANY);
+        server_socket->Bind(INADDR_ANY, htons(SERVER_PORT));
 
         server_socket->Listen(LISTENQ);
 
@@ -22,7 +23,7 @@ void createTestTCPServer()
         {
             Socket_sptr client_socket = server_socket->Accept();
 
-            int n = 0;
+            int received_data_length = 0;
             int maxlen = 100;
             char buffer[maxlen];
 
@@ -34,7 +35,7 @@ void createTestTCPServer()
             << inet_ntoa(server_socket->GetSockAddrStruct()->sin_addr) 
             <<std::endl;
 
-            while (client_socket->Recv(buffer, maxlen, 0) > 0)
+            while (received_data_length = client_socket->Recv(buffer, maxlen, 0))
             {
                 std::cout << "received: "
                 << buffer << std::endl;

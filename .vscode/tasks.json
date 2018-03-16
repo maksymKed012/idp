@@ -25,6 +25,7 @@
                 "idp_task1.cpp",
                 "socket_wrapper.cpp",
                 "util.cpp",
+                "--std=c++14",
                 "-o",
                 "idp_task1"
             ],

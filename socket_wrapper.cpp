@@ -11,7 +11,7 @@ Socket::Socket(int handle,  sockaddr* address)
     m_socket_address.sin_port = temp_address->sin_port;
 }
 
-Socket::Socket(int domain, int type, int protocol, int port)
+Socket::Socket(int domain, int type, int protocol)
 {
     m_socket_handle = socket(domain, type, protocol);
 
@@ -36,7 +36,7 @@ void Socket::SetInAddressWithStr(const char* ip_address_str)
         throw SocketException("inet_pton returned error");
 }
 
-void Socket::Bind(const unsigned port, const unsigned address)
+void Socket::Bind(const unsigned address, const unsigned port)
 {
     m_socket_address.sin_addr.s_addr = address;
     m_socket_address.sin_port = port;
