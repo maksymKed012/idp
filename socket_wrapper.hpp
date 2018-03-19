@@ -1,6 +1,9 @@
+#ifndef __SOCKET_WRAPPER_HPP__
+#define __SOCKET_WRAPPER_HPP__
 
-#include "util.h"
 #include <memory>
+#include <netinet/in.h>
+
 
 class Socket;
 
@@ -21,7 +24,7 @@ class Socket
     void                    SetInAddressWithStr(const char* ip_address_str);
     void                    InitSocketAddress(int family, int address, int port);
     void                    Bind(const unsigned address, const unsigned port);
-    void                    Listen(int flag);
+    void                    Listen(int backlog);
     Socket_sptr             Accept();
     void                    Close();
     void                    Send(const void* buffer, size_t buffer_len, int flags);
@@ -31,3 +34,5 @@ class Socket
     int                     Read(void* buffer, size_t buffer_length);
     void                    Write(const void* buffer, size_t buffer_length);
 };
+
+#endif

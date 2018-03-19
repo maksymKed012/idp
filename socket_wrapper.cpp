@@ -1,5 +1,8 @@
 #include "socket_wrapper.hpp"
 #include "socket_exception.hpp"
+#include <string.h>
+#include <arpa/inet.h>
+#include <unistd.h>
 
 Socket::Socket(int handle,  sockaddr* address) 
 : m_socket_handle(handle)
@@ -45,9 +48,9 @@ void Socket::Bind(const unsigned address, const unsigned port)
         throw SocketException("bind returned error");
 }
 
-void Socket::Listen(int flag)
+void Socket::Listen(int backlog)
 {
-    if(listen(m_socket_handle, flag) < 0)
+    if(listen(m_socket_handle, backlog) < 0)
         throw SocketException("listen returned error");
 }
 

@@ -1,7 +1,8 @@
 #include "socket_wrapper.hpp"
 #include "socket_exception.hpp"
-#include "util.h"
 #include <iostream>
+#include <string.h>
+#include <arpa/inet.h>
 
 static const int LISTENQ = 16;
 static const int DEFAULT_ERROR = -1;
