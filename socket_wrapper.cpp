@@ -17,6 +17,7 @@ Socket::Socket(int handle,  sockaddr* address)
 Socket::Socket(int domain, int type, int protocol)
 {
     m_socket_handle = socket(domain, type, protocol);
+    m_socket_address.sin_family = domain;
 
     if(m_socket_handle == -1)
     {
@@ -69,24 +70,44 @@ void Socket::Close()
         throw SocketException("close returned error");
 }
 
-void Socket::Send(const void* buffer, size_t buffer_length, int flags)
+int Socket::Send(const void* buffer, size_t buffer_length, int flags)
 {
-    if(send(m_socket_handle, buffer, buffer_length, flags) < 0)
+    int retVal = send(m_socket_handle, buffer, buffer_length, flags);
+    if(retVal < 0)
        throw SocketException("send returned error");
+
+    return retVal;
 }
 
 int Socket::Recv(void* buffer, size_t buffer_length, int flags)
 {
-    return recv(m_socket_handle, buffer, buffer_length, flags);
+    int retVal = recv(m_socket_handle, buffer, buffer_length, flags);
+    if(retVal < 0)
+        throw SocketException("recv returned error");
+
+    return retVal;
 }
 
 int Socket::Read(void* buffer, size_t buffer_length)
 {
-    return read(m_socket_handle, buffer, buffer_length);
+    int retVal = read(m_socket_handle, buffer, buffer_length);
+    if(retVal < 0)
+        throw SocketException("read returned error");
+
+    return retVal;
 }
 
 void Socket::Write(const void* buffer, size_t buffer_length)
 {
     if(write(m_socket_handle, buffer, buffer_length) == -1)
         throw SocketException("write returned error");
+}
+
+void Socket::Bind(const char* ip_address_str, const unsigned port)
+{
+    SetInAddressWithStr(ip_address_str);
+    m_socket_address.sin_port = port;
+
+    if(bind(m_socket_handle, (const sockaddr*)&m_socket_address, sizeof(m_socket_address)) < 0)
+        throw SocketException("bind returned error");
 }
