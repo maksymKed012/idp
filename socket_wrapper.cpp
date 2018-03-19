@@ -52,7 +52,7 @@ void Socket::Bind(const unsigned address, const unsigned port)
 void Socket::Bind(const char* ip_address_str, const unsigned port)
 {
     SetInAddressWithStr(ip_address_str);
-    m_socket_address.sin_port = port;
+    m_socket_address.sin_port = htons(port);
 
     if(bind(m_socket_handle, (const sockaddr*)&m_socket_address, sizeof(m_socket_address)) < 0)
         throw SocketException("bind returned error");
