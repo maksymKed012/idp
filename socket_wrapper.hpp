@@ -28,11 +28,13 @@ class Socket
     Socket_sptr             Accept();
     void                    Close();
     int                     Send(const void* buffer, size_t buffer_len, int flags);
-    int                     GetSocketHandle() const {return m_socket_handle;}
-    const sockaddr_in*      GetSockAddrStruct() const {return &m_socket_address;}
     int                     Recv(void* buffer, size_t buffer_length, int flags);
     int                     Read(void* buffer, size_t buffer_length);
-    void                    Write(const void* buffer, size_t buffer_length);
+    int                     Write(const void* buffer, size_t buffer_length);
+    int                     GetSocketHandle() const {return m_socket_handle;}
+    const sockaddr_in*      GetSockAddrStruct() const {return &m_socket_address;}
+    const char*             GetIPAddressStr() const;
+    
 };
 
 #endif

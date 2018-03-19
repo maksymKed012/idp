@@ -43,6 +43,15 @@ void Socket::SetInAddressWithStr(const char* ip_address_str)
 void Socket::Bind(const unsigned address, const unsigned port)
 {
     m_socket_address.sin_addr.s_addr = address;
+    m_socket_address.sin_port = htons(port);
+
+    if(bind(m_socket_handle, (const sockaddr*)&m_socket_address, sizeof(m_socket_address)) < 0)
+        throw SocketException("bind returned error");
+}
+
+void Socket::Bind(const char* ip_address_str, const unsigned port)
+{
+    SetInAddressWithStr(ip_address_str);
     m_socket_address.sin_port = port;
 
     if(bind(m_socket_handle, (const sockaddr*)&m_socket_address, sizeof(m_socket_address)) < 0)
@@ -97,17 +106,16 @@ int Socket::Read(void* buffer, size_t buffer_length)
     return retVal;
 }
 
-void Socket::Write(const void* buffer, size_t buffer_length)
+int Socket::Write(const void* buffer, size_t buffer_length)
 {
-    if(write(m_socket_handle, buffer, buffer_length) == -1)
+    int retVal = write(m_socket_handle, buffer, buffer_length);
+    if(retVal < 0)
         throw SocketException("write returned error");
+
+    return retVal;
 }
 
-void Socket::Bind(const char* ip_address_str, const unsigned port)
+const char* Socket::GetIPAddressStr()  const
 {
-    SetInAddressWithStr(ip_address_str);
-    m_socket_address.sin_port = port;
-
-    if(bind(m_socket_handle, (const sockaddr*)&m_socket_address, sizeof(m_socket_address)) < 0)
-        throw SocketException("bind returned error");
+    return inet_ntoa(m_socket_address.sin_addr);
 }
