@@ -1,5 +1,5 @@
-#ifndef __SOCKET_WRAPPER_HPP__
-#define __SOCKET_WRAPPER_HPP__
+#ifndef SOCKET_WRAPPER_HPP
+#define SOCKET_WRAPPER_HPP
 #include <memory>
 #include <netinet/in.h>
 
