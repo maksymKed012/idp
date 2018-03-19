@@ -1,55 +1,60 @@
 #include "socket_wrapper.hpp"
-#include "util.h"
+#include "socket_exception.hpp"
+#include <iostream>
+#include <string.h>
 
+static const int BUFFER_MAXLEN = 100;
 static const int LISTENQ = 16;
-static const int DEFAULT_ERROR = -1;
 static const int SERVER_PORT = 8877;
-static const int ECHO_STR_LEN = 6;                                            
+static const char* ECHO_STR_PREFIX = "echo: ";
+static const int ECHO_STR_LEN = strlen(ECHO_STR_PREFIX);
 
 void createTestTCPServer()
 {
     try 
     {
-    std::unique_ptr<SocketWrapper> server_socket = std::make_unique<SocketWrapper>(AF_INET, SOCK_STREAM, 0, SERVER_PORT);
+        Socket_sptr server_socket = std::make_shared<Socket>(AF_INET, SOCK_STREAM, 0);
 
-    server_socket->Bind();
+        server_socket->Bind(INADDR_ANY, SERVER_PORT);
 
-    server_socket->Listen(LISTENQ);
+        server_socket->Listen(LISTENQ);
 
-    while (true) 
-    {
-		std::unique_ptr<SocketWrapper> client_socket = server_socket->Accept();
-
-		int n = 0;
-		int maxlen = 100;
-		char buffer[maxlen];
-
-        char echo[maxlen + ECHO_STR_LEN];
-        strcpy(echo, "echo: \0");
-        memset(buffer, 0, maxlen);
-
-		printf("client connected with ip address: %s\n",
-		       inet_ntoa(server_socket->GetSockAddrStruct()->sin_addr));
-
-		while ((n = recv(client_socket->GetSocketHandle(), buffer, maxlen, 0)) > 0)
+        while (true) 
         {
-			printf("received: %s", buffer);
+            Socket_sptr client_socket = server_socket->Accept();
 
-            strcat(echo, buffer);
+            int received_data_length = 0;
+            
+            char buffer[BUFFER_MAXLEN];
 
-			client_socket->Send(echo, strlen(echo), 0);
-            memset(buffer, 0, maxlen);
-            memset(echo + ECHO_STR_LEN - 1, 0, maxlen);
-		}
+            char echo[BUFFER_MAXLEN + ECHO_STR_LEN];
+            strcpy(echo, ECHO_STR_PREFIX);
+            memset(buffer, 0, BUFFER_MAXLEN);
 
-		client_socket->Close();
-	}
+            std::cout << "client connected with ip address: " 
+            << client_socket->GetIPAddressStr() 
+            <<std::endl;
 
-	server_socket->Close();
+            while (received_data_length = client_socket->Recv(buffer, BUFFER_MAXLEN, 0))
+            {
+                std::cout << "received: "
+                << buffer << std::endl;
+
+                strcat(echo, buffer);
+
+                client_socket->Send(echo, strlen(echo), 0);
+                memset(buffer, 0, BUFFER_MAXLEN);
+                memset(echo + ECHO_STR_LEN, 0, BUFFER_MAXLEN);
+            }
+
+		    client_socket->Close();
+	    }
+
+	    server_socket->Close();
     }
-    catch (std::exception & e)
+    catch (SocketException & e)
     {
-        printf(e.what());
+        std::cout << e.what() << std::endl;
     }
 }
 
