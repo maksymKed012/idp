@@ -22,6 +22,9 @@ class SocketWrapper
     void                      InitSocketAddress(int family, int address, int port);
     void                      Bind();
     void                      Listen(int flag);
+    // just as suggestion - you can use typedefs with some suffixes for smart pointers.
+    // like unique_ptr = _uptr, shared_ptr = _sptr.
+    // so std::unique_ptr<SocketWrapper> = SocketWrapper_uptr
     std::unique_ptr<SocketWrapper> Accept();
     void                      Close();
     void                      Send(const void* buffer, size_t buffer_len, int flags);
