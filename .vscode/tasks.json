@@ -27,7 +27,8 @@
                 "util.cpp",
                 "--std=c++14",
                 "-o",
-                "idp_task1"
+                "idp_task1",
+                "-lpthread"
             ],
             "group": "build",
             "presentation": {
