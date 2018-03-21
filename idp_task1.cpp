@@ -14,22 +14,28 @@ static const int ECHO_STR_LEN = strlen(ECHO_STR_PREFIX);
 void listeningThread(Socket_sptr client_socket)
 {
     int n = 0;
-    int maxlen = 100;
-    char buffer[maxlen];
+    char buffer[BUFFER_MAXLEN];
 
-    char echo[maxlen + ECHO_STR_LEN];
+    char echo[BUFFER_MAXLEN + ECHO_STR_LEN];
     strcpy(echo, ECHO_STR_PREFIX);
-    memset(buffer, 0, maxlen);
+    memset(buffer, 0, BUFFER_MAXLEN);
 
-    while ((n = client_socket->Recv(buffer, maxlen, 0)) > 0)
+    try 
     {
-        printf("received: %s", buffer);
+        while ((n = client_socket->Recv(buffer, BUFFER_MAXLEN, 0)))
+        {
+            std::cout << "received: " << buffer << std::endl;
 
-        strcat(echo, buffer);
+            strcat(echo, buffer);
 
-        client_socket->Send(echo, strlen(echo), 0);
-        memset(buffer, 0, maxlen);
-        memset(echo + ECHO_STR_LEN, 0, maxlen);
+            client_socket->Send(echo, strlen(echo), 0);
+            memset(buffer, 0, BUFFER_MAXLEN);
+            memset(echo + ECHO_STR_LEN, 0, BUFFER_MAXLEN);
+        }
+    }
+    catch (SocketException & e)
+    {
+        std::cout << e.what() << std::endl;
     }
 
     client_socket->Close();
@@ -39,41 +45,25 @@ void createTestTCPServer()
 {
     std::vector<std::thread> listeningThreads;
 
-    try 
+    Socket_sptr server_socket = std::make_shared<Socket>(AF_INET, SOCK_STREAM, 0);
+
+    server_socket->Bind(INADDR_ANY, SERVER_PORT);
+
+    server_socket->Listen(LISTENQ);
+
+    while (true) 
     {
-        Socket_sptr server_socket = std::make_shared<Socket>(AF_INET, SOCK_STREAM, 0);
+        Socket_sptr client_socket = server_socket->Accept();
 
-        server_socket->Bind(INADDR_ANY, SERVER_PORT);
+        std::cout << "client connected with ip address: " 
+        << client_socket->GetIPAddressStr() 
+        <<std::endl;
 
-        server_socket->Listen(LISTENQ);
-
-        while (true) 
-        {
-            Socket_sptr client_socket = server_socket->Accept();
-
-            int received_data_length = 0;
-            
-            char buffer[BUFFER_MAXLEN];
-
-            char echo[BUFFER_MAXLEN + ECHO_STR_LEN];
-            strcpy(echo, ECHO_STR_PREFIX);
-            memset(buffer, 0, BUFFER_MAXLEN);
-
-            std::cout << "client connected with ip address: " 
-            << client_socket->GetIPAddressStr() 
-            <<std::endl;
-
-            listeningThreads.push_back(std::thread(listeningThread, std::move(client_socket)));
-	    }
-
-	    server_socket->Close();
+        listeningThreads.push_back(std::thread(listeningThread, std::move(client_socket)));
     }
-    catch (SocketException & e)
-    {
-        printf("%s",e.what());
-        for (std::thread& listeningThread : listeningThreads)
-            listeningThread.join();
-    }
+
+    server_socket->Close();
+    
 }
 
 int main(int argc, char** argv)
