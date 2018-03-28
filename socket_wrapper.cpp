@@ -1,10 +1,11 @@
 #include "socket_wrapper.hpp"
 #include "socket_exception.hpp"
-#include <string.h>
+#include <string>
 #include <arpa/inet.h>
 #include <unistd.h>
+#include <iostream>
 
-Socket::Socket(int handle,  sockaddr* address) 
+Socket::Socket(int handle,  sockaddr* address)
 : m_socket_handle(handle)
 {
     bzero(&m_socket_address, sizeof(sockaddr_in));
@@ -25,6 +26,17 @@ Socket::Socket(int domain, int type, int protocol)
     }
 }
 
+Socket::~Socket()
+{
+    Close();
+}
+
+void Socket::SetInAddressWithStr(const char* ip_address_str)
+{
+    if((inet_pton(AF_INET, ip_address_str, &m_socket_address.sin_addr)) <= 0)
+        throw SocketException("inet_pton returned error");
+}
+
 void Socket::InitSocketAddress(int family, int address, int port)
 {
     bzero(&m_socket_address, sizeof(sockaddr_in));
@@ -32,12 +44,6 @@ void Socket::InitSocketAddress(int family, int address, int port)
     m_socket_address.sin_family = family;
     m_socket_address.sin_addr.s_addr = address;
     m_socket_address.sin_port = port;
-}
-
-void Socket::SetInAddressWithStr(const char* ip_address_str)
-{
-    if((inet_pton(AF_INET, ip_address_str, &m_socket_address.sin_addr)) <= 0)
-        throw SocketException("inet_pton returned error");
 }
 
 void Socket::Bind(const unsigned address, const unsigned port)
@@ -67,7 +73,7 @@ void Socket::Listen(int backlog)
 Socket_sptr Socket::Accept()
 {
     struct sockaddr_in client_address;
-	socklen_t client_address_len = 0;
+	socklen_t client_address_len = sizeof(client_address);
     int client_socket_handle = accept(m_socket_handle, (sockaddr*)&client_address, &client_address_len);
     if(client_socket_handle == -1) throw SocketException("accept returned error");
     return std::make_shared<Socket>(client_socket_handle, (sockaddr*)&client_address);
@@ -118,4 +124,24 @@ int Socket::Write(const void* buffer, size_t buffer_length)
 const char* Socket::GetIPAddressStr()  const
 {
     return inet_ntoa(m_socket_address.sin_addr);
+}
+
+const unsigned short Socket::GetPort() const
+{
+  return m_socket_address.sin_port;
+}
+
+Socket::operator int() const
+{
+    return m_socket_handle;
+}
+
+bool operator==(const Socket_sptr& right, const Socket_sptr& left)
+{
+    return right->GetSocketHandle() == left->GetSocketHandle();
+}
+
+bool operator==(const Socket_sptr& right, const int left)
+{
+    return right->GetSocketHandle() == left;
 }
