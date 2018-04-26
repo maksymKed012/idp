@@ -9,17 +9,21 @@ class Socket;
 using Socket_uptr = std::unique_ptr<Socket>;
 using Socket_sptr = std::shared_ptr<Socket>;
 
+bool             operator==(const Socket_sptr&, const Socket_sptr&);
+bool             operator==(const Socket_sptr&, const int);
+
 class Socket
 {
     private:
-    
-    int m_socket_handle;
-    sockaddr_in m_socket_address;
+
+    int                     m_socket_handle;
+    sockaddr_in             m_socket_address;
 
     public:
 
                             Socket(int handle, sockaddr* address);
                             Socket(int domain, int type, int protocol);
+                            ~Socket();
     void                    SetInAddressWithStr(const char* ip_address_str);
     void                    InitSocketAddress(int family, int address, int port);
     void                    Bind(const char* ip_address_str, const unsigned port);
@@ -34,7 +38,9 @@ class Socket
     int                     GetSocketHandle() const {return m_socket_handle;}
     const sockaddr_in*      GetSockAddrStruct() const {return &m_socket_address;}
     const char*             GetIPAddressStr() const;
-    
+    const unsigned short    GetPort() const;
+
+                            operator int() const;
 };
 
 #endif

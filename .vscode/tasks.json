@@ -25,6 +25,8 @@
                 "idp_task1.cpp",
                 "socket_wrapper.cpp",
                 "util.cpp",
+                "async_tcp_server.cpp",
+                "async_engine.cpp",
                 "--std=c++14",
                 "-o",
                 "idp_task1"
