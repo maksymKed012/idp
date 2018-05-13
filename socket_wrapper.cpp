@@ -103,6 +103,15 @@ int Socket::Recv(void* buffer, size_t buffer_length, int flags)
     return retVal;
 }
 
+sockaddr_in Socket::RecvDGram(void* buffer, size_t buffer_length, int flags)
+{
+    struct sockaddr_in client_address;
+    socklen_t address_length = sizeof(client_address);
+    int retVal = recvfrom(m_socket_handle, buffer, buffer_length, flags, (sockaddr*)&client_address, &address_length);
+
+    return retVal;
+}
+
 int Socket::Read(void* buffer, size_t buffer_length)
 {
     int retVal = read(m_socket_handle, buffer, buffer_length);

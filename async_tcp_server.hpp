@@ -17,6 +17,7 @@ class AsyncTCPServer
     void                            CloseConnection(Socket_sptr);
     bool                            ShouldConnectClient(Socket_sptr);
     void                            SendEcho(Socket_sptr, const char*, const int);
+    void                            SendEchoDGram();
 
     public:
 

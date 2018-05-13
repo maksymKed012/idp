@@ -54,7 +54,7 @@ void AsyncTCPServer::SendEcho(Socket_sptr active_socket, const char* buffer, con
 
 AsyncTCPServer::AsyncTCPServer() 
 {
-    m_master_socket = std::make_shared<Socket>(AF_INET, SOCK_STREAM, 0);
+    m_master_socket = std::make_shared<Socket>(AF_INET, SOCK_DGRAM, 0);
     m_async_engine = std::make_unique<AsyncEngine>();
     m_async_engine->AddSocket(m_master_socket);
 }
@@ -79,23 +79,9 @@ void AsyncTCPServer::RunAsyncServer(const int server_port)
             
             for(auto& socket : ready_sockets)
             {
-                if(socket == m_master_socket)
-                {
-                    AcceptIncomingConnection();
-                }
-                else
-                {
-                    int received_bytes_count = socket->Recv(buffer, sizeof(buffer), 0);
+                sockaddr_in client_address = socket->RecvDGram(buffer, sizeof(buffer), 0);
 
-                    if(received_bytes_count == 0)
-                    {
-                        CloseConnection(socket);
-                    }
-                    else
-                    {
-                        SendEcho(socket, buffer, BUFFER_MAXLEN);
-                    }
-                }
+                SendEcho(socket, buffer, BUFFER_MAXLEN);
             }
         }
 
